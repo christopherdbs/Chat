@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <title>Chat</title>
+    </head>
+ 
+    <body>
+        <h1>Chat </h1>
+
+        <form action="/" method="post" id="chat_form">
+            <input type="text" name="message" id="message" placeholder="Your message..." size="50" autofocus />
+            <input type="submit" id="send" value="Send" />
+        </form>
+        
+          <section id="chat">
+            
+        </section>
+
+        <script src="http://code.jquery.com/jquery-1.10.1.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io.connect('http://localhost:8080');
+            var pseudo = prompt('What is your nickname ?');
+            socket.emit('new_client', pseudo);
+            document.title = pseudo + ' : ' + document.title;
+
+            socket.on('connect', function(pseudo){
+               $('#chat').prepend('<p><em> You have joined the Chatroom !</em></p>');
+
+            })
+
+            socket.on('new_client', function(message){
+               $('#chat').prepend('<p><em>' + message +'</em></p>');
+
+            })
+
+            socket.on('message', function(message_data) {
+                $('#chat').prepend('<p><strong>' + message_data.pseudo + '</strong> ' + message_data.message + '</p>');
+            })
+
+            
+            socket.on('disconnect', function(pseudo){
+                 $('#chat').prepend('<p><em>'+pseudo+' left the Chatroom !</em></p>');
+
+            })
+              
+
+           $('#chat_form').submit(function () {
+                var message = $('#message').val();
+                socket.emit('message', message); 
+                 $('#chat').prepend('<p><strong> Me : </strong> ' + message + '</p>');
+                $('#message').val('').focus(); 
+                return false; 
+            });
+        </script>
+    </body>
+</html>
